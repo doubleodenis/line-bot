@@ -11,7 +11,7 @@ bot.on('message', function (event) {
     //console.log(event);
     switch (event.message.type) {
         case 'text':
-            const message = event.message.text;
+            let message = event.message.text;
             if (message.substring(0, 1) == '~') //If prepended with ~, it's a SPECIAL COMMAND
             {
                 message = message.substring(1, message.length);
