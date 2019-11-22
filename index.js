@@ -26,6 +26,13 @@ bot.on('message', function (event) {
     switch (event.message.type) {
         case 'text':
             let message = event.message.text;
+            //For darian
+            if(message.contains('stimulate my pants') || message.contains('Stimulate my pants')) {
+                event.source.profile().then(function (profile) {
+                    return event.reply('** Stimulating ' + profile.displayName + "'s pants right now, wow! **");
+                });
+            }
+
             if (message.substring(0, 1) == '~') //If prepended with ~, it's a SPECIAL COMMAND
             {
                 message = message.substring(1, message.length);
@@ -41,7 +48,7 @@ bot.on('message', function (event) {
 
                     //role [userId] [role]
                     //Role: dev | user | bitch
-                    
+
                     event.source.profile().then(function (profile) {
                         return event.reply('Hello ' + profile.userId);
                     });
