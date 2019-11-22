@@ -20,11 +20,15 @@ bot.on('message', function (event) {
             users.push({
                 userId: event.source.userId,
                 user: profile.displayName,
-                role: 'user'
+                role: profile.displayName == "Double O' Menace" ? 'god' : 'user'
             })
+
         })
     }
     console.log(users);
+
+    const currentUser = users.find(user => event.source.userId == user.userId);
+
     switch (event.message.type) {
         case 'text':
             let message = event.message.text;
@@ -49,26 +53,52 @@ bot.on('message', function (event) {
                     if(arg.substring(0,1) == '"') return arg.substring(1, message.length - 1); //Remove quotations
                     else return arg;
                 })
-                console.log(args);
 
                 switch (command) {
                     case 'set': //~set [subcommand] [..args]
 
-                    //role [userId] [role]
-                    //Role: dev | user | bitch
+                        //role [userId | userDisplayName] [role]
+                        //Role: god | dev | user | bitch
+                        
+                        //check permission first
+                        const permission = currentUser.role;
 
-                    event.source.profile().then(function (profile) {
-                        return event.reply('Hello ' + profile.userId);
-                    });
-                        //if(args[0] && event.source.userId)
+                        if(permission == 'god' || permission == 'dev') //you have power to SET
+                        {
+                            const user = users.find(user => user.displayName == args[1] || user.userId == args[1]);
+                            if(!user) return event.reply(`User ${args[2]} was not found.`);
+                            if(args[2]) {
+                                switch(args[2]) {
+                                    case 'god':
+                                        return event.reply('Nice try buddy.')
+                                    break;
+                                    case 'bitch':
+                                        user.role = 'bitch';
+                                    break;
+                                    case 'user':
+                                        user.role = 'user';
+                                    break;
+                                    case 'dev':
+                                        user.role = 'dev';
+                                    break;
+                                    default:
+                                        user.role = 'user';
+                                    break;
+                                }
+                                event.reply(`User ${args[1]} is now role "${user.role}"`);
+                            }                         
+                        }
+                        else {
+                            event.reply("You don't have permission to do this");
+                        }
+                        console.log(users);
                     break;
-                    case 'permission':
-                        if(args[0] && args[0] == 'true')
-                            permission = true;
-                        else if(args[0] && args[0] == 'false')
-                            permission = false;
-                        console.log(permission.toString())
-                        event.reply(permission);
+                    case 'users':
+                        if(currentUser.role == 'god' || currentUser.role == 'dev') {
+                            users.forEach(user => {
+                                event.reply(user);
+                            })
+                        }
                     break;
                     case 'leavebot':
                         if (event.source.type == 'group')
@@ -86,8 +116,8 @@ bot.on('message', function (event) {
                         bot.broadcast('Broadcast!');
                         break;
                     case 'confirm':
-                        if (args.length != 3) return event.reply('Missing values to execute command, try ~help');
-
+                        if (args.length < 3) return event.reply('Missing values to execute command, try ~help');
+                        
                         event.reply({
                             type: 'template',
                             altText: 'this is a confirm template',
@@ -113,7 +143,8 @@ bot.on('message', function (event) {
                         if(args[0] == 'dev')  event.reply('Dev commands:')
 
                         event.reply('Help: \n~me\n~version\n~leavebot\n' +
-                            '~confirm [text] [answer1] [answer2]');
+                            '~confirm [text] [answer1] [answer2] //Not working right now\n' +
+                            '~set role [userId | userDisplayName] [role] //Doesnt work with display name');
                         break;
                     default:
                         event.reply('Not a valid command! Try ~help')
