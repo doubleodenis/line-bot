@@ -10,6 +10,19 @@ let permission = false; //testing if permissions persist
 let users = [];
 bot.on('message', function (event) {
     console.log(event);
+    let added = false;
+    users.forEach(user => {
+        if(user.userId == event.source.userId) added = true;
+    })
+    if(!added) {
+        event.source.profile().then(profile => {
+            users.push({
+                userId: event.source.userId,
+                user: profile.displayName,
+                role: 'user'
+            })
+        })
+    }
     switch (event.message.type) {
         case 'text':
             let message = event.message.text;
@@ -18,21 +31,24 @@ bot.on('message', function (event) {
                 message = message.substring(1, message.length);
                 if (message.length == 0) return event.reply('No command found.');
                 
-                const value = message.match(/"(.*?)"|\w+/); //Matches args and commands within " " or not
+                const value = message.match(/"(.*?)"|\w+/g); //Matches args and commands within " " or not
                 console.log(value);
                 const command = value[0];
                 const args = value.slice(1, value.length);
 
                 switch (command) {
-                    case 'userRole': //~userRole [userId] [role]
+                    case 'set': //~set [subcommand] [..args]
+
+                    //role [userId] [role]
                     //Role: dev | user | bitch
+                    
                     event.source.profile().then(function (profile) {
                         return event.reply('Hello ' + profile.userId);
                     });
                         //if(args[0] && event.source.userId)
                     break;
                     case 'permission':
-                        if(arg[0] && arg[0] == true)
+                        if(args[0] && args[0] == true)
                             permission = true;
                         
                         event.reply(permission);
