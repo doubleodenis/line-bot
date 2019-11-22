@@ -26,8 +26,9 @@ bot.on('message', function (event) {
     switch (event.message.type) {
         case 'text':
             let message = event.message.text;
+
             //For darian
-            if(message.contains('stimulate my pants') || message.contains('Stimulate my pants')) {
+            if(message.includes('stimulate my pants') || message.includes('Stimulate my pants')) {
                 event.source.profile().then(function (profile) {
                     return event.reply('** Stimulating ' + profile.displayName + "'s pants right now, wow! **");
                 });
@@ -55,8 +56,10 @@ bot.on('message', function (event) {
                         //if(args[0] && event.source.userId)
                     break;
                     case 'permission':
-                        if(args[0] && args[0] == true)
+                        if(args[0] && args[0] == 'true')
                             permission = true;
+                        else if(args[0] && args[0] == 'false')
+                            permission = false;
                         
                         event.reply(permission);
                     break;
