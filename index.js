@@ -11,6 +11,7 @@ let users = [];
 bot.on('message', function (event) {
     console.log(event);
     let added = false;
+    
     users.forEach(user => {
         if(user.userId == event.source.userId) added = true;
     })
@@ -23,6 +24,7 @@ bot.on('message', function (event) {
             })
         })
     }
+    console.log(users);
     switch (event.message.type) {
         case 'text':
             let message = event.message.text;
@@ -42,7 +44,12 @@ bot.on('message', function (event) {
                 const value = message.match(/"(.*?)"|\w+/g); //Matches args and commands within " " or not
                 console.log(value);
                 const command = value[0];
-                const args = value.slice(1, value.length);
+                let args = value.slice(1, value.length);
+                args = args.map(arg => {
+                    if(arg.substring(0,1) == '"') return arg.substring(1, message.length - 1); //Remove quotations
+                    else return arg;
+                })
+                console.log(args);
 
                 switch (command) {
                     case 'set': //~set [subcommand] [..args]
@@ -60,7 +67,7 @@ bot.on('message', function (event) {
                             permission = true;
                         else if(args[0] && args[0] == 'false')
                             permission = false;
-                        
+                        console.log(permission.toString())
                         event.reply(permission);
                     break;
                     case 'leavebot':
