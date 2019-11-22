@@ -6,9 +6,10 @@ const bot = linebot({
     channelAccessToken: process.env.CHANNEL_ACCESS_TOKEN,
     verify: true // default=true
 });
-
+let permission = false; //testing if permissions persist
+let users = [];
 bot.on('message', function (event) {
-    //console.log(event);
+    console.log(event);
     switch (event.message.type) {
         case 'text':
             let message = event.message.text;
@@ -16,11 +17,26 @@ bot.on('message', function (event) {
             {
                 message = message.substring(1, message.length);
                 if (message.length == 0) return event.reply('No command found.');
-
-                const value = message.split(' ');
+                
+                const value = message.match(/"(.*?)"|\w+/); //Matches args and commands within " " or not
+                console.log(value);
                 const command = value[0];
                 const args = value.slice(1, value.length);
+
                 switch (command) {
+                    case 'userRole': //~userRole [userId] [role]
+                    //Role: dev | user | bitch
+                    event.source.profile().then(function (profile) {
+                        return event.reply('Hello ' + profile.userId);
+                    });
+                        //if(args[0] && event.source.userId)
+                    break;
+                    case 'permission':
+                        if(arg[0] && arg[0] == true)
+                            permission = true;
+                        
+                        event.reply(permission);
+                    break;
                     case 'leavebot':
                         if (event.source.type == 'group')
                             bot.leaveGroup(event.source.groupId);
@@ -61,6 +77,8 @@ bot.on('message', function (event) {
                         event.reply('linebot@' + require('../package.json').version);
                         break;
                     case 'help':
+                        if(args[0] == 'dev')  event.reply('Dev commands:')
+
                         event.reply('Help: \n~me\n~version\n~leavebot\n' +
                             '~confirm [text] [answer1] [answer2]');
                         break;
