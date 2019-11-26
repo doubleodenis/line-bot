@@ -1,4 +1,5 @@
 const linebot = require('linebot');
+var rp = require('request-promise');
 
 const bot = linebot({
     channelId: process.env.CHANNEL_ID,
@@ -6,25 +7,46 @@ const bot = linebot({
     channelAccessToken: process.env.CHANNEL_ACCESS_TOKEN,
     verify: true // default=true
 });
-let permission = false; //testing if permissions persist
+
 let users = [];
+
+function getUser(groupId, userId) {
+
+    const options = {
+        uri: `https://api.line.me/v2/bot/group/${groupId}/member/${userId}`,
+        headers: {
+            'User-Agent': 'Request-Promise'
+        },
+        json: true
+    }
+
+    return rp(options)
+        .then((res) => res)
+        .catch((err) => console.log(err));
+}
+
 bot.on('message', function (event) {
     console.log(event);
-    let added = false;
-    
-    users.forEach(user => {
-        if(user.userId == event.source.userId) added = true;
-    })
-    if(!added) {
-        event.source.profile().then(profile => {
+
+    event.source.profile().then(profile => {
+        let found = users.find(user => user.userId == event.source.userId || profile.displayName == user.displayName)
+
+        if(!found) { //add user
             users.push({
                 userId: event.source.userId,
                 user: profile.displayName,
                 role: profile.displayName == "Double O' Menace" ? 'god' : 'user'
             })
+        }
+        else if(found && found.userId == null) { //update user
+            users.forEach(user => {
+                if(user.user == found.user) user.userId = event.source.userId;
+            })
+        }
+    })
+    
 
-        })
-    }
+    console.log('Users: ');
     console.log(users);
 
     const currentUser = users.find(user => event.source.userId == user.userId);
@@ -46,7 +68,7 @@ bot.on('message', function (event) {
                 if (message.length == 0) return event.reply('No command found.');
                 
                 const value = message.match(/"(.*?)"|\w+/g); //Matches args and commands within " " or not
-                console.log(value);
+                console.log(value); // should return words in quotations and without, ex: word and "word or words" but it doesn't
                 const command = value[0];
                 let args = value.slice(1, value.length);
                 args = args.map(arg => {
@@ -55,49 +77,87 @@ bot.on('message', function (event) {
                 })
 
                 switch (command) {
+                    case 'adduser': //~adduser -@[displayName]
+                        const i = message.indexOf('-@');
+                        let msg = message.slice(i + 2, message.length);
+                        users.push({
+                            userId: null,
+                            user: msg, //display name
+                            role: 'user'
+                        })
+                        
+                    break;
+                    case 'setusers': //~setusers -@[displayName] @[..displayNames]
+                        const i = message.indexOf('-@');
+                        const msg = message.slice(i, message.length);
+                        const names = msg.split(' @');
+                        names.forEach(name => {
+                            let found = users.find(user => user.user == name);
+                            if(!found) {
+                                users.push({
+                                    userId: null,
+                                    user: name, //display name
+                                    role: 'user'
+                                })
+                            }
+                        })
+                    break;
+                    case 'getusers': //~getusers
+                        let msg = '';
+                        users.forEach(user => {
+                            msg += user.user + "\n";
+                        })
+                    break;
                     case 'set': //~set [subcommand] [..args]
 
-                        //role [userId | userDisplayName] [role]
-                        //Role: god | dev | user | bitch
-                        
                         //check permission first
                         const permission = currentUser.role;
 
                         if(permission == 'god' || permission == 'dev') //you have power to SET
                         {
-                            const user = users.find(user => user.displayName == args[1] || user.userId == args[1]);
-                            if(!user) return event.reply(`User ${args[2]} was not found.`);
-                            if(args[2]) {
-                                switch(args[2]) {
-                                    case 'god':
-                                        return event.reply('Nice try buddy.')
-                                    break;
-                                    case 'bitch':
-                                        user.role = 'bitch';
-                                    break;
-                                    case 'user':
-                                        user.role = 'user';
-                                    break;
-                                    case 'dev':
-                                        user.role = 'dev';
-                                    break;
-                                    default:
-                                        user.role = 'user';
-                                    break;
-                                }
-                                event.reply(`User ${args[1]} is now role "${user.role}"`);
-                            }                         
+                            
+                            //role [userId | userDisplayName] [role]
+                            //Role: god | dev | user | bitch
+                            if(args[0] == 'role') {
+                                const user = users.find(user => user.displayName == args[1] || user.userId == args[1]);
+                                if(!user) return event.reply(`User ${args[2]} was not found.`);
+                                if(args[2]) {
+                                    switch(args[2]) {
+                                        case 'god':
+                                            return event.reply('Nice try buddy.')
+                                        break;
+                                        case 'bitch':
+                                            user.role = 'bitch';
+                                        break;
+                                        case 'user':
+                                            user.role = 'user';
+                                        break;
+                                        case 'dev':
+                                            user.role = 'dev';
+                                        break;
+                                        default:
+                                            user.role = 'user';
+                                        break;
+                                    }
+                                    event.reply(`User ${args[1]} is now role "${user.role}"`);
+                                }          
+                            }
+                            else if(args[0] == 'users') { //role @:[user] [...users]
+                                console.log(args)
+                            }
                         }
                         else {
                             event.reply("You don't have permission to do this");
                         }
-                        console.log(users);
                     break;
                     case 'users':
                         if(currentUser.role == 'god' || currentUser.role == 'dev') {
                             users.forEach(user => {
                                 event.reply(user);
                             })
+                        }
+                        else {
+                            event.reply("You don't have permission to do that.");
                         }
                     break;
                     case 'leavebot':
@@ -136,19 +196,58 @@ bot.on('message', function (event) {
                             }
                         });
                         break;
+                    case 'button':
+                        event.reply({
+                            "type": "template",
+                            "altText": "This is a buttons template",
+                            "template": {
+                                "type": "buttons",
+                                "thumbnailImageUrl": "",//"https://example.com/bot/images/image.jpg",
+                                "imageAspectRatio": "rectangle",
+                                "imageSize": "cover",
+                                "imageBackgroundColor": "#FFFFFF",
+                                "title": "Menu",
+                                "text": "Please select",
+                                /*"defaultAction": {
+                                    "type": "uri",
+                                    "label": "View detail",
+                                    "uri": "http://example.com/page/123"
+                                },*/
+                                "actions": [
+                                    /*{
+                                      "type": "uri",
+                                      "label": "View detail",
+                                      "uri": "http://example.com/page/123"
+                                    }*/
+                                ]
+                            }
+                          })
+                    break;
                     case 'version':
                         event.reply('linebot@' + require('../package.json').version);
                         break;
                     case 'help':
                         if(args[0] == 'dev')  event.reply('Dev commands:')
 
-                        event.reply('Help: \n~me\n~version\n~leavebot\n' +
+                        event.reply('Help: \n@everyone\n~me\n~version\n~leavebot\n' +
                             '~confirm [text] [answer1] [answer2] //Not working right now\n' +
-                            '~set role [userId | userDisplayName] [role] //Doesnt work with display name');
+                            '~set role [userId | userDisplayName] [role] //Doesnt work with display name\n' +
+                            '~adduser ');
                         break;
                     default:
                         event.reply('Not a valid command! Try ~help')
                     break;
+                }
+            }
+            else if(message.substring(0,1) == '@')
+            {
+                if(message.substring(1, message.length) == 'everyone')
+                {
+                    let msg = "";
+                    users.forEach(user => {
+                        msg = msg + "@" + user.user + " "
+                    }) 
+                    event.reply(msg);
                 }
             }
                 /* Original text event
