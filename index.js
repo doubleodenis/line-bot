@@ -76,9 +76,11 @@ bot.on('message', function (event) {
                     else return arg;
                 })
 
+                let permission = currentUser.role; //get current permission
+
                 switch (command) {
                     case 'adduser': //~adduser -@[displayName]
-                        const i = message.indexOf('-@');
+                        let i = message.indexOf('-@');
                         let msg = message.slice(i + 2, message.length);
                         users.push({
                             userId: null,
@@ -88,9 +90,9 @@ bot.on('message', function (event) {
                         event.reply(`User ${user} added`)
                     break;
                     case 'setusers': //~setusers -@[displayName] @[..displayNames]
-                        const i = message.indexOf('-@');
-                        const msg = message.slice(i, message.length);
-                        const names = msg.split(' @');
+                        let i = message.indexOf('-@');
+                        let msg = message.slice(i, message.length);
+                        let names = msg.split(' @');
                         names.forEach(name => {
                             let found = users.find(user => user.user == name);
                             if(!found) {
@@ -114,8 +116,7 @@ bot.on('message', function (event) {
                     case 'set': //~set [subcommand] [..args]
 
                         //check permission first
-                        const permission = currentUser.role;
-
+ 
                         if(permission == 'god' || permission == 'dev') //you have power to SET
                         {
                             
@@ -248,7 +249,7 @@ bot.on('message', function (event) {
                 {
                     let msg = "";
                     users.forEach(user => {
-                        msg = msg + "@" + user.user + " "
+                        msg += "@" + user.user + " "
                     }) 
                     event.reply(msg);
                 }
