@@ -8,7 +8,6 @@ const bot = linebot({
     verify: true // default=true
 });
 
-let users = [];
 
 function getUser(groupId, userId) {
 
@@ -24,6 +23,7 @@ function getUser(groupId, userId) {
         .then((res) => res)
         .catch((err) => console.log(err));
 }
+let users = [];
 
 bot.on('message', function (event) {
     console.log(event);
@@ -44,13 +44,12 @@ bot.on('message', function (event) {
             })
         }
     })
-    
 
     console.log('Users: ');
     console.log(users);
 
     const currentUser = users.find(user => event.source.userId == user.userId);
-
+    console.log(currentUser)
     switch (event.message.type) {
         case 'text':
             let message = event.message.text;
@@ -76,7 +75,9 @@ bot.on('message', function (event) {
                     else return arg;
                 })
 
-                let permission = currentUser.role; //get current permission
+                let permission = 'user';
+                if(currentUser)
+                    permission = currentUser.role; //get current permission
                 
                 switch (command) {
                     case 'adduser': //~adduser -@[displayName]
