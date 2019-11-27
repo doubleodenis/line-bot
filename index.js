@@ -77,22 +77,22 @@ bot.on('message', function (event) {
                 })
 
                 let permission = currentUser.role; //get current permission
-
+                
                 switch (command) {
                     case 'adduser': //~adduser -@[displayName]
-                        let i = message.indexOf('-@');
-                        let msg = message.slice(i + 2, message.length);
+                        const addUserIndex = message.indexOf('-@');
+                        const addUserMsg = message.slice(addUserIndex + 2, message.length);
                         users.push({
                             userId: null,
-                            user: msg, //display name
+                            user: addUserMsg, //display name
                             role: 'user'
                         })
-                        event.reply(`User ${user} added`)
+                        event.reply(`User ${addUserMsg} added`)
                     break;
                     case 'setusers': //~setusers -@[displayName] @[..displayNames]
-                        let i = message.indexOf('-@');
-                        let msg = message.slice(i, message.length);
-                        let names = msg.split(' @');
+                        const setUsersIndex = message.indexOf('-@');
+                        const setUsersMsg = message.slice(setUsersIndex, message.length);
+                        let names = setUsersMsg.split(' @');
                         names.forEach(name => {
                             let found = users.find(user => user.user == name);
                             if(!found) {
@@ -107,11 +107,11 @@ bot.on('message', function (event) {
                         event.reply('Users array set.')
                     break;
                     case 'getusers': //~getusers
-                        let msg = '';
+                        let getUsersMsg = '';
                         users.forEach(user => {
-                            msg += user.user + "\n";
+                            getUsersMsg += user.user + "\n";
                         })
-                        event.reply('Users:\n' + msg);
+                        event.reply('Users:\n' + getUsersMsg);
                     break;
                     case 'set': //~set [subcommand] [..args]
 
