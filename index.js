@@ -14,7 +14,8 @@ function getMainChat(groupId) {
     const opt = {
         uri: `https://api.line.me/v2/bot/group/${groupId}/members/count`,
         headers: {
-            'User-Agent': 'Request-Promise'
+            'User-Agent': 'Request-Promise',
+            'Authorization': `Bearer ${process.env.CHANNEL_ACCESS_TOKEN}`
         },
         json: true
     }
@@ -22,7 +23,8 @@ function getMainChat(groupId) {
     const opt2 ={
         uri: `https://api.line.me/v2/bot/group/${groupId}/summary`,
         headers: {
-            'User-Agent': 'Request-Promise'
+            'User-Agent': 'Request-Promise',
+            'Authorization': `Bearer ${process.env.CHANNEL_ACCESS_TOKEN}`
         },
         json: true
     }
@@ -66,7 +68,7 @@ function birthdayTimeout() {
 function happyBirthday() {
 
     const today = new Date();
-    
+
     const birthdays = {
         "Susan": "01/09/1998",
         "Danny": "11/23/1998",
@@ -112,7 +114,8 @@ function _pushTextMessage(id, _messages) {
     const opt = {
         uri: `https://api.line.me/v2/bot/message/push`,
         headers: {
-            'User-Agent': 'Request-Promise'
+            'User-Agent': 'Request-Promise',
+            'Authorization': `Bearer ${process.env.CHANNEL_ACCESS_TOKEN}`
         },
         body: {
             to: id,
@@ -130,7 +133,8 @@ function getUser(groupId, userId) {
     const options = {
         uri: `https://api.line.me/v2/bot/group/${groupId}/member/${userId}`,
         headers: {
-            'User-Agent': 'Request-Promise'
+            'User-Agent': 'Request-Promise',        
+            'Authorization': `Bearer ${process.env.CHANNEL_ACCESS_TOKEN}`
         },
         json: true
     }
