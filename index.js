@@ -65,6 +65,8 @@ function birthdayTimeout() {
 
 function happyBirthday() {
 
+    const today = new Date();
+    
     const birthdays = {
         "Susan": "01/09/1998",
         "Danny": "11/23/1998",
