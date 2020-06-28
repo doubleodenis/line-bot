@@ -8,6 +8,120 @@ const bot = linebot({
     verify: true // default=true
 });
 
+let mainChatId = null;
+let otherChatId = null;
+function getMainChat(groupId) {
+    const opt = {
+        uri: `https://api.line.me/v2/bot/group/${groupId}/members/count`,
+        headers: {
+            'User-Agent': 'Request-Promise'
+        },
+        json: true
+    }
+
+    const opt2 ={
+        uri: `https://api.line.me/v2/bot/group/${groupId}/summary`,
+        headers: {
+            'User-Agent': 'Request-Promise'
+        },
+        json: true
+    }
+
+    rp(opt).then((res) => {
+        rp(opt2).then(res2 => {
+            if(res.count > 10 && res2.groupName == "The Groupies" && mainChatId != null) {
+                mainChatId = res2.groupId;
+            }
+            else {
+                otherChatId = res2.groupId;
+            }
+            console.log(mainChatId, otherChatId);
+        })
+    })
+    .catch((err) => console.log(err));
+}
+
+getMainChat();
+
+
+// var happyBirthdayClock = null;
+happyBirthday();
+// setTimeout(happyBirthday, birthdayTimeout());
+
+function birthdayTimeout() {
+    const today = new Date();
+    const hours = today.getHours();
+    
+    var ampm = hours >= 12 ? 'pm' : 'am';
+         
+    var tomorrow = new Date(today.getTime() + (24 * 60 * 60 * 1000));
+    tomorrow.setHours(0,0,0);
+    tomorrow.setMilliseconds(0);
+
+    var waitTime =(tomorrow.getTime() - today.getTime());
+
+    return waitTime;
+}
+
+function happyBirthday() {
+
+    const birthdays = {
+        "Susan": "01/09/1998",
+        "Danny": "11/23/1998",
+        "Marcel": "11/11/1998",
+        "Abdiel": "09/14/1997",
+        "Denis": "11/11/1998",
+        "KC": "05/19/1998",
+        "Justin": "05/01/1998",
+        "Alyson": "06/02/1998",
+        "Kristen": "07/30/1998",
+        "Brian": "07/12/1998",
+        "Lynch": "10/27/1998",
+        "Darian": "01/27/1998",
+        "Amelia": "08/30/2000",
+        "Daniel": "04/13/2001",
+        "David": "03/04/1998",
+        "Marcel's mom": "01/28/1970",
+        "test": "06/28/2020"
+    }
+
+
+    for(const name in birthdays) {
+        const birthdate = new Date(birthdays[name]);
+         
+        if(birthdate.getMonth() + 1 == today.getMonth() + 1 && birthdate.getDay() == today.getDay()) {
+            _pushTextMessage(otherChatId, [`Happy birthday ${name}! ~From Denis`, `Coding always wins Danny. I always win.`]);
+        }
+    }
+
+    
+    // happyBirthdayClock = setInterval(happyBirthday, birthdayTimeout());
+    setTimeout(happyBirthday, birthdayTimeout());
+}
+
+function _pushTextMessage(id, _messages) {
+    const messages = _messages.map(msg => {
+        return {
+            type: "text",
+            message: msg
+        }
+    });
+
+    const opt = {
+        uri: `https://api.line.me/v2/bot/message/push`,
+        headers: {
+            'User-Agent': 'Request-Promise'
+        },
+        body: {
+            to: id,
+            messages: messages
+        },
+        json: true
+    }
+
+    rp(opt).then(res => console.log(res))
+    .catch(err => console.log(err));
+}
 
 function getUser(groupId, userId) {
 
