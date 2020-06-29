@@ -9,21 +9,21 @@ const bot = linebot({
     verify: true // default=true
 });
 
-let mainChatId = null;
-let otherChatId = null;
+var mainChatId = null;
+var otherChatId = null;
 function getMainChat(groupId) {
     if(!groupId) return;
 
     axios.get(`https://api.line.me/v2/bot/group/${groupId}/members/count`).then((res) => {
         axios.get(`https://api.line.me/v2/bot/group/${groupId}/summary`).then(res2 => {
-            if(res.count > 10 && res2.groupName == "The Groupies" && mainChatId != null) {
-                mainChatId = res2.groupId;
+            if(res.count > 10 && res2.groupName == "The Groupies" && mainChatId == null) {
+                mainChatId = groupId;
                 happyBirthday(); //start happy birthday clock
             }
             else {
-                otherChatId = res2.groupId;
+                otherChatId = groupId;
             }
-            console.log(mainChatId, otherChatId);
+            console.log(res2, mainChatId, otherChatId);
         })
     })
     .catch((err) => console.log(err));
