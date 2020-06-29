@@ -1,5 +1,6 @@
 const linebot = require('linebot');
-var rp = require('request-promise');
+var axios = require('axios');
+axios.defaults.headers.common['Authorization'] = `Bearer ${process.env.CHANNEL_ACCESS_TOKEN}`;
 
 const bot = linebot({
     channelId: process.env.CHANNEL_ID,
@@ -11,26 +12,9 @@ const bot = linebot({
 let mainChatId = null;
 let otherChatId = null;
 function getMainChat(groupId) {
-    const opt = {
-        uri: `https://api.line.me/v2/bot/group/${groupId}/members/count`,
-        headers: {
-            'User-Agent': 'Request-Promise',
-            'Authorization': `Bearer ${process.env.CHANNEL_ACCESS_TOKEN}`
-        },
-        json: true
-    }
 
-    const opt2 ={
-        uri: `https://api.line.me/v2/bot/group/${groupId}/summary`,
-        headers: {
-            'User-Agent': 'Request-Promise',
-            'Authorization': `Bearer ${process.env.CHANNEL_ACCESS_TOKEN}`
-        },
-        json: true
-    }
-
-    rp(opt).then((res) => {
-        rp(opt2).then(res2 => {
+    axios.get(`https://api.line.me/v2/bot/group/${groupId}/members/count`).then((res) => {
+        axios.get(`https://api.line.me/v2/bot/group/${groupId}/summary`).then(res2 => {
             if(res.count > 10 && res2.groupName == "The Groupies" && mainChatId != null) {
                 mainChatId = res2.groupId;
             }
@@ -111,35 +95,14 @@ function _pushTextMessage(id, _messages) {
         }
     });
 
-    const opt = {
-        uri: `https://api.line.me/v2/bot/message/push`,
-        headers: {
-            'User-Agent': 'Request-Promise',
-            'Authorization': `Bearer ${process.env.CHANNEL_ACCESS_TOKEN}`
-        },
-        body: {
-            to: id,
-            messages: messages
-        },
-        json: true
-    }
-
-    rp(opt).then(res => console.log(res))
-    .catch(err => console.log(err));
+    axios.post(`https://api.line.me/v2/bot/message/push`, {
+        to: id,
+        messages: messages
+    })
 }
 
 function getUser(groupId, userId) {
-
-    const options = {
-        uri: `https://api.line.me/v2/bot/group/${groupId}/member/${userId}`,
-        headers: {
-            'User-Agent': 'Request-Promise',        
-            'Authorization': `Bearer ${process.env.CHANNEL_ACCESS_TOKEN}`
-        },
-        json: true
-    }
-
-    return rp(options)
+    return axios.get(`https://api.line.me/v2/bot/group/${groupId}/member/${userId}`)
         .then((res) => res)
         .catch((err) => console.log(err));
 }
