@@ -12,11 +12,13 @@ const bot = linebot({
 let mainChatId = null;
 let otherChatId = null;
 function getMainChat(groupId) {
+    if(!groupId) return;
 
     axios.get(`https://api.line.me/v2/bot/group/${groupId}/members/count`).then((res) => {
         axios.get(`https://api.line.me/v2/bot/group/${groupId}/summary`).then(res2 => {
             if(res.count > 10 && res2.groupName == "The Groupies" && mainChatId != null) {
                 mainChatId = res2.groupId;
+                happyBirthday(); //start happy birthday clock
             }
             else {
                 otherChatId = res2.groupId;
@@ -27,11 +29,10 @@ function getMainChat(groupId) {
     .catch((err) => console.log(err));
 }
 
-getMainChat();
 
 
 // var happyBirthdayClock = null;
-happyBirthday();
+
 // setTimeout(happyBirthday, birthdayTimeout());
 
 function birthdayTimeout() {
@@ -70,7 +71,7 @@ function happyBirthday() {
         "Daniel": "04/13/2001",
         "David": "03/04/1998",
         "Marcel's mom": "01/28/1970",
-        "test": "06/28/2020"
+        "test": "06/29/2020"
     }
 
 
@@ -110,6 +111,9 @@ let users = [];
 
 bot.on('message', function (event) {
     console.log(event);
+
+    if(mainChatId == null)
+        getMainChat(event.source.groupId);
 
     event.source.profile().then(profile => {
         let found = users.find(user => user.userId == event.source.userId || profile.displayName == user.displayName)
