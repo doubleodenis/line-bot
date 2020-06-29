@@ -98,13 +98,15 @@ function _pushTextMessage(id, _messages) {
         }
     });
 
-    axios.post(`https://api.line.me/v2/bot/message/push`, {
-        to: id,
-        messages: messages
-    }).then(res => {
-        console.log(`Sent bday message to ${id}`);
-    })
-    .catch(err => console.log(err))
+    // axios.post(`https://api.line.me/v2/bot/message/push`, {
+    //     to: id,
+    //     messages: messages
+    // }).then(res => {
+    //     console.log(`Sent bday message to ${id}`);
+    // })
+    // .catch(err => console.log(err))
+
+    bot.push(id, messages);
 }
 
 function getUser(groupId, userId) {
