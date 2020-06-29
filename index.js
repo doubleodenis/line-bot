@@ -14,15 +14,18 @@ var otherChatId = null;
 function getMainChat(groupId) {
     if(!groupId) return;
 
+    if(mainChatId == groupId || otherChatId == groupId) return;
+
+
     axios.get(`https://api.line.me/v2/bot/group/${groupId}/members/count`).then((res) => {
         axios.get(`https://api.line.me/v2/bot/group/${groupId}/summary`).then(res2 => {
             if(res.data.count > 10 && res2.data.groupName == "The Groupies" && mainChatId == null) {
                 mainChatId = groupId;
-                happyBirthday(); //start happy birthday clock
+                if(!happyBirthdayClockOn)
+                    happyBirthday(); //start happy birthday clock
             }
             else {
                 otherChatId = groupId;
-                happyBirthday();
             }
             console.log(res2, mainChatId, otherChatId);
         })
@@ -33,7 +36,7 @@ function getMainChat(groupId) {
 
 
 
-// var happyBirthdayClock = null;
+var happyBirthdayClockOn = false;
 
 // setTimeout(happyBirthday, birthdayTimeout());
 
@@ -73,7 +76,7 @@ function happyBirthday() {
         "Daniel": "04/13/2001",
         "David": "03/04/1998",
         "Marcel's mom": "01/28/1970",
-        "test": "06/29/2020"
+        "test": "06/30/2020"
     }
 
 
@@ -81,13 +84,20 @@ function happyBirthday() {
         const birthdate = new Date(birthdays[name]);
          
         if(birthdate.getMonth() + 1 == today.getMonth() + 1 && birthdate.getDay() == today.getDay()) {
-            _pushTextMessage(otherChatId, [`Happy birthday ${name}! ~From Denis`, `Coding always wins Danny. I always win.`]);
+            if(name != "test")
+                _pushTextMessage(mainChatId, [`Happy birthday ${name}! ~From Denis`, `Coding always wins Danny. I always win.`]);
+            else
+                _pushTextMessage(otherChatId, [`Testing my birthday timer checker at 12 am? :)`]);
         }
     }
+
+
+        
 
     
     // happyBirthdayClock = setInterval(happyBirthday, birthdayTimeout());
     setTimeout(happyBirthday, birthdayTimeout());
+    happyBirthdayClockOn = true;
 }
 
 function _pushTextMessage(id, _messages) {
@@ -174,6 +184,10 @@ bot.on('message', function (event) {
                     permission = currentUser.role; //get current permission
                 
                 switch (command) {
+                    case 'rolldie': //~rolldie <number>
+                        let randomNum = Math.floor(Math.random() * (args[0] - 0) + 0); 
+                        event.reply(`Dice rolled a ${randomNum}`);
+                    break;
                     case 'adduser': //~adduser -@[displayName]
                         const addUserIndex = message.indexOf('-@');
                         const addUserMsg = message.slice(addUserIndex + 2, message.length);
