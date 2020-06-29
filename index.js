@@ -94,7 +94,7 @@ function _pushTextMessage(id, _messages) {
     const messages = _messages.map(msg => {
         return {
             type: "text",
-            message: msg
+            text: msg
         }
     });
 
