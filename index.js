@@ -16,12 +16,13 @@ function getMainChat(groupId) {
 
     axios.get(`https://api.line.me/v2/bot/group/${groupId}/members/count`).then((res) => {
         axios.get(`https://api.line.me/v2/bot/group/${groupId}/summary`).then(res2 => {
-            if(res.count > 10 && res2.groupName == "The Groupies" && mainChatId == null) {
+            if(res.data.count > 10 && res2.groupName == "The Groupies" && mainChatId == null) {
                 mainChatId = groupId;
                 happyBirthday(); //start happy birthday clock
             }
             else {
                 otherChatId = groupId;
+                happyBirthday();
             }
             console.log(res2, mainChatId, otherChatId);
         })
