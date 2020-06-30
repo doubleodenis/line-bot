@@ -2,6 +2,8 @@ const linebot = require('linebot');
 var axios = require('axios');
 axios.defaults.headers.common['Authorization'] = `Bearer ${process.env.CHANNEL_ACCESS_TOKEN}`;
 
+const TIMEZONE_OFFSET = 4; //4 hrs behind
+
 const bot = linebot({
     channelId: process.env.CHANNEL_ID,
     channelSecret: process.env.CHANNEL_SECRET,
@@ -42,12 +44,13 @@ var happyBirthdayClockOn = false;
 
 function birthdayTimeout() {
     const today = new Date();
+    today.setHours(today.getHours() + TIMEZONE_OFFSET);
     const hours = today.getHours();
     
     var ampm = hours >= 12 ? 'pm' : 'am';
          
     var tomorrow = new Date(today.getTime() + (24 * 60 * 60 * 1000));
-    tomorrow.setHours(0,0,0);
+    tomorrow.setHours(TIMEZONE_OFFSET,0,0);
     tomorrow.setMilliseconds(0);
 
     var waitTime =(tomorrow.getTime() - today.getTime());
@@ -75,29 +78,24 @@ function happyBirthday() {
         "Amelia": "08/30/2000",
         "Daniel": "04/13/2001",
         "David": "03/04/1998",
-        "Marcel's mom": "01/28/1970",
-        "test": "06/30/2020"
+        "Marcel's mom": "01/29/1970",
+        "test": "07/01/2020"
     }
 
 
     for(const name in birthdays) {
         const birthdate = new Date(birthdays[name]);
          
-        if(birthdate.getMonth() + 1 == today.getMonth() + 1 && birthdate.getDay() == today.getDay()) {
+        if(birthdate.getMonth() + 1 == today.getMonth() + 1 && birthdate.getDate() == today.getDate()) {
             if(name != "test")
-                _pushTextMessage(mainChatId, [`Happy birthday ${name}! ~From Denis`, `Coding always wins Danny. I always win.`]);
+                _pushTextMessage(mainChatId, [`Happy birthday ${name}! ~From Denis`]);
             else
                 _pushTextMessage(otherChatId, [`Testing my birthday timer checker at 12 am? :)`]);
         }
     }
-
-
-        
-
-    
-    // happyBirthdayClock = setInterval(happyBirthday, birthdayTimeout());
-    setTimeout(happyBirthday, birthdayTimeout());
-    happyBirthdayClockOn = true;
+     
+    // happyBirthdayClock = setInterval(happyBirthday, birthdayTimeout()); 
+    happyBirthdayClock = setTimeout(happyBirthday, birthdayTimeout());
 }
 
 function _pushTextMessage(id, _messages) {
